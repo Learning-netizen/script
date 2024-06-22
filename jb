@@ -1,0 +1,42 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local TweenService = game:GetService("TweenService")
+
+-- Function to teleport the player
+local function teleportTo(position)
+    local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Linear)
+    local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = CFrame.new(position)})
+    tween:Play()
+    tween.Completed:Wait()
+end
+
+-- Locations (Replace these with actual coordinates)
+local bankPosition = Vector3.new(100, 10, 200)  -- Example coordinates
+local jewelryStorePosition = Vector3.new(150, 20, 250)  -- Example coordinates
+
+-- Rob the bank
+local function robBank()
+    teleportTo(bankPosition)
+    -- Add interactions with the bank here
+    print("Robbing the bank...")
+end
+
+-- Rob the jewelry store
+local function robJewelryStore()
+    teleportTo(jewelryStorePosition)
+    -- Add interactions with the jewelry store here
+    print("Robbing the jewelry store...")
+end
+
+-- Main autorob logic
+local function autorob()
+    while true do
+        robBank()
+        wait(30)  -- Adjust the wait time as needed
+        robJewelryStore()
+        wait(30)  -- Adjust the wait time as needed
+    end
+end
+
+autorob()
