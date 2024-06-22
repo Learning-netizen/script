@@ -1,46 +1,87 @@
--- Initial setup
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
-local RunService = game:GetService("RunService")
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
--- Function to disable collisions for all character parts
-local function disableCollisions()
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = false
+-- Function to teleport the player
+local function teleportTo(position)
+    local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Linear)
+    local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = CFrame.new(position)})
+    tween:Play()
+    tween.Completed:Wait()
+end
+
+-- Coordinates for key locations
+local locations = {
+    bank = Vector3.new(13.61, 18.38, 762.56),
+    jewelryStore = Vector3.new(138.34, 18.38, 1345.14),
+    museum = Vector3.new(1078.46, 104.82, 1240.67)
+}
+
+-- Function to simulate a button press
+local function pressButton(button)
+    if button and button:IsA("ClickDetector") then
+        fireclickdetector(button)
+    elseif button and button:IsA("ProximityPrompt") then
+        fireproximityprompt(button)
+    end
+end
+
+-- Rob the bank
+local function robBank()
+    teleportTo(locations.bank)
+    wait(1)  -- Wait for teleport to complete
+
+    -- Add interactions with the bank here
+    -- Example: Find and press the button to start the robbery
+    local button = workspace:FindFirstChild("BankButton")  -- Adjust the path as necessary
+    if button then
+        pressButton(button.ClickDetector)
+    end
+    print("Robbing the bank...")
+end
+
+-- Rob the jewelry store
+local function robJewelryStore()
+    teleportTo(locations.jewelryStore)
+    wait(1)  -- Wait for teleport to complete
+
+    -- Add interactions with the jewelry store here
+    -- Example: Break the glass cases
+    for _, glass in pairs(workspace:FindFirstChild("GlassCases"):GetChildren()) do
+        if glass and glass:FindFirstChild("ClickDetector") then
+            pressButton(glass.ClickDetector)
         end
     end
+    print("Robbing the jewelry store...")
 end
 
--- Noclip logic
-RunService.Stepped:Connect(function()
-    disableCollisions()
-end)
+-- Rob the museum
+local function robMuseum()
+    teleportTo(locations.museum)
+    wait(1)  -- Wait for teleport to complete
 
--- Initial activation of noclip
-disableCollisions()
-print("Noclip enabled")
-
--- Function to move character
-local function moveCharacter()
-    local moveDirection = Vector3.new()
-    local UserInputService = game:GetService("UserInputService")
-
-    if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-        moveDirection = moveDirection + (character.PrimaryPart.CFrame.LookVector * 1)
+    -- Add interactions with the museum here
+    -- Example: Collect the artifacts
+    for _, artifact in pairs(workspace:FindFirstChild("Artifacts"):GetChildren()) do
+        if artifact and artifact:FindFirstChild("ProximityPrompt") then
+            pressButton(artifact.ProximityPrompt)
+        end
     end
-    if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-        moveDirection = moveDirection - (character.PrimaryPart.CFrame.LookVector * 1)
-    end
-    if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-        moveDirection = moveDirection - (character.PrimaryPart.CFrame.RightVector * 1)
-    end
-    if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-        moveDirection = moveDirection + (character.PrimaryPart.CFrame.RightVector * 1)
-    end
-
-    character:SetPrimaryPartCFrame(character.PrimaryPart.CFrame + moveDirection)
+    print("Robbing the museum...")
 end
 
--- Continuously move character while noclip is active
-RunService.Stepped:Connect(moveCharacter)
+-- Main autorob logic
+local function autorob()
+    while true do
+        robBank()
+        wait(30)  -- Adjust the wait time as needed
+        robJewelryStore()
+        wait(30)  -- Adjust the wait time as needed
+        robMuseum()
+        wait(30)  -- Adjust the wait time as needed
+    end
+end
+
+autorob()
