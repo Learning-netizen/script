@@ -1,42 +1,46 @@
+-- Initial setup
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
-local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
--- Function to teleport the player
-local function teleportTo(position)
-    local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Linear)
-    local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = CFrame.new(position)})
-    tween:Play()
-    tween.Completed:Wait()
-end
-
--- Locations (Replace these with actual coordinates)
-local bankPosition = Vector3.new(100, 10, 200)  -- Example coordinates
-local jewelryStorePosition = Vector3.new(150, 20, 250)  -- Example coordinates
-
--- Rob the bank
-local function robBank()
-    teleportTo(bankPosition)
-    -- Add interactions with the bank here
-    print("Robbing the bank...")
-end
-
--- Rob the jewelry store
-local function robJewelryStore()
-    teleportTo(jewelryStorePosition)
-    -- Add interactions with the jewelry store here
-    print("Robbing the jewelry store...")
-end
-
--- Main autorob logic
-local function autorob()
-    while true do
-        robBank()
-        wait(30)  -- Adjust the wait time as needed
-        robJewelryStore()
-        wait(30)  -- Adjust the wait time as needed
+-- Function to disable collisions for all character parts
+local function disableCollisions()
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
     end
 end
 
-autorob()
+-- Noclip logic
+RunService.Stepped:Connect(function()
+    disableCollisions()
+end)
+
+-- Initial activation of noclip
+disableCollisions()
+print("Noclip enabled")
+
+-- Function to move character
+local function moveCharacter()
+    local moveDirection = Vector3.new()
+    local UserInputService = game:GetService("UserInputService")
+
+    if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+        moveDirection = moveDirection + (character.PrimaryPart.CFrame.LookVector * 1)
+    end
+    if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+        moveDirection = moveDirection - (character.PrimaryPart.CFrame.LookVector * 1)
+    end
+    if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+        moveDirection = moveDirection - (character.PrimaryPart.CFrame.RightVector * 1)
+    end
+    if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+        moveDirection = moveDirection + (character.PrimaryPart.CFrame.RightVector * 1)
+    end
+
+    character:SetPrimaryPartCFrame(character.PrimaryPart.CFrame + moveDirection)
+end
+
+-- Continuously move character while noclip is active
+RunService.Stepped:Connect(moveCharacter)
